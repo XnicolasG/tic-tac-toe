@@ -4,10 +4,24 @@ const TURNS = {
   X: 'X',
   O: 'O',
 }
-
-const Square = ({ children,isSelected, updateBoard, index }) => {
+const Winner_Combos = [
+  [0, 1, 2],
+  [3, 4, 5],
+  [6, 7, 8],
+  [0, 3, 6],
+  [1, 4, 7],
+  [2, 5, 8],
+  [0, 4, 8],
+  [2, 4, 6],
+]
+const Square = ({ children, isSelected, updateBoard, index }) => {
+  const hanldeClick = () => {
+    updateBoard(index)
+  }
   return (
-    <div className={`square ${isSelected ? 'is-selected' : ''}`}>
+    <div
+      onClick={hanldeClick}
+      className={`square ${isSelected ? 'is-selected' : ''}`}>
       {children}
     </div>
   )
@@ -15,23 +29,50 @@ const Square = ({ children,isSelected, updateBoard, index }) => {
 function App() {
   const [board, setBoard] = useState(Array(9).fill(null));
   const [turn, setTurn] = useState(TURNS.X);
+  const [winner, setWinner] = useState(null);
 
-  const updateBoard = () => {
+  const checkWinner = (boardToCheck) => {
+    for (const combo of Winner_Combos) {
+      const [a, b, c] = combo;
+      if (
+        boardToCheck[a] && 
+        boardToCheck[a] === boardToCheck[b] &&
+        boardToCheck[a] === boardToCheck[c]
+      ){
+        return boardToCheck[a]
+      }
+    }
+    return null
+  }
+  const updateBoard = (index) => {
+    //no se actualiza valor de la posición si la posición ya tiene algo
+    if (board[index] || winner) return
+
+    const newBoard = [...board];
     
+    newBoard[index] = turn
+    setBoard(newBoard)
+    const newTurn = turn === TURNS.X ? TURNS.O : TURNS.X;
+    setTurn(newTurn);
+    const newWinner = checkWinner(newBoard);
+    if (newWinner) {
+      setWinner(newWinner)
+    }
   }
 
   return (
     <main className="board">
-      <h1>Triki</h1>
+      {winner ? <h1>Winner is {winner}</h1> : <h1>Triki</h1>}
+      {/* <h1>Triki</h1> */}
       <section className="game">
         {
           board.map((_, index) => (
-            <Square 
-            key={index} 
-            index={index}
-            updateBoard={updateBoard}
+            <Square
+              key={index}
+              index={index}
+              updateBoard={updateBoard}
             >
-              
+              {board[index]}
             </Square>
           ))
         }
